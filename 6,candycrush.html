@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Candy Crush</title>
+<style>
+    body{
+      background-color: antiquewhite;
+    }
+    #game-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+      
+    #game-board {
+        display: grid;
+        grid-template-columns: repeat(8, 50px);
+        grid-template-rows: repeat(8, 50px);
+        gap: 5px;
+    }   
+    .candy {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+      
+    .candy.red {
+        background-color: red;
+    }
+      
+    .candy.blue {
+        background-color: blue;
+    }
+      
+    .candy.green {
+        background-color: green;
+    }
+      
+    .candy.yellow {
+        background-color: yellow;
+    }
+      
+    .candy.purple {
+        background-color: purple;
+    }
+    
+    .candy.black {
+        background-color: black;
+    }
+    
+    .candy.pink {
+        background-color: pink;
+    }
+    
+    .candy.orange {
+        background-color: orange;
+    }
+    
+    p {
+        font-size: 30px;
+    }
+    
+    #timer {
+        font-size: 20px;
+    }
+</style>
+</head>
+<body>
+<div id="game-container">
+  <div id="game-board"></div>
+  <p id="score">Score: 0</p>
+  <p id="timer"></p>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const gameBoard = document.getElementById('game-board');
+        const candies = ['red', 'blue', 'green', 'yellow', 'purple', 'black', 'pink', 'orange'];
+        let score = 0; // Initialize score
+        let seconds = 0;
+        let minutes = 0;
+        let timerDisplay = document.getElementById('timer');
+  
+        // Create game board
+        function createBoard() {
+          for (let i = 0; i < 64; i++) {
+            const candy = document.createElement('div');
+            let randomCandy = candies[Math.floor(Math.random() * candies.length)];
+            candy.classList.add('candy', randomCandy);
+            candy.setAttribute('draggable', true);
+            candy.setAttribute('id', i);
+            gameBoard.appendChild(candy);
+          }
+        }
+      
+        createBoard();
+      
+        let candyBeingDragged;
+        let candyBeingReplaced;
+        let squareIdBeingDragged;
+        let squareIdBeingReplaced;
+      
+        // Drag and drop functionality
+        gameBoard.addEventListener('dragstart', (e) => {
+          candyBeingDragged = e.target;
+          squareIdBeingDragged = parseInt(candyBeingDragged.id);
+        });
+      
+        gameBoard.addEventListener('dragover', (e) => {
+          e.preventDefault();
+        });
+      
+        gameBoard.addEventListener('dragenter', (e) => {
+          e.preventDefault();
+        });
+      
+        gameBoard.addEventListener('dragleave', (e) => {
+        });
+      
+        gameBoard.addEventListener('drop', (e) => {
+          candyBeingReplaced = e.target;
+          squareIdBeingReplaced = parseInt(candyBeingReplaced.id);
+          swapCandies();
+          updateScore(); // Update score after a move
+          checkForMatches(); // Check for matches after each move
+        });
+      
+        // Swap candies
+        function swapCandies() {
+          const validMoves = [
+            squareIdBeingDragged - 1,
+            squareIdBeingDragged - 8,
+            squareIdBeingDragged + 1,
+            squareIdBeingDragged + 8
+          ];
+          const isAValidMove = validMoves.includes(squareIdBeingReplaced);
+      
+          if (isAValidMove) {
+            const validMove = squareIdBeingReplaced % 8 !== 0 || squareIdBeingDragged % 8 !== 7;
+      
+            if (validMove) {
+              const tempCandy = candyBeingDragged.className;
+              candyBeingDragged.className = candyBeingReplaced.className;
+              candyBeingReplaced.className = tempCandy;
+            }
+          }
+        }
+      
+        // Update score
+        function updateScore() {
+          score += 10; // Increment score by 10 for each valid move
+          document.getElementById('score').textContent = `Score: ${score}`;
+        }
+  
+        // Timer function
+        function startTimer() {
+          setInterval(() => {
+            seconds++;
+            if (seconds === 60) {
+              seconds = 0;
+              minutes++;
+            }
+            timerDisplay.textContent = `Timer: ${padNumber(minutes)}:${padNumber(seconds)}`;
+          }, 1000);
+        }
+  
+        function padNumber(num) {
+          return (num < 10 ? '0' : '') + num;
+        }
+  
+        // Check for matches
+        function checkForMatches() {
+          const candiesList = document.querySelectorAll('.candy');
+          const rows = 8;
+          const cols = 8;
+          const clearList = [];
+          
+          // Check rows
+          for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols - 2; j++) {
+              const currentCandy = candiesList[i * cols + j];
+              const nextCandy1 = candiesList[i * cols + j + 1];
+              const nextCandy2 = candiesList[i * cols + j + 2];
+              
+              if (
+                currentCandy.className === nextCandy1.className &&
+                currentCandy.className === nextCandy2.className
+              ) {
+                clearList.push(currentCandy, nextCandy1, nextCandy2);
+              }
+            }
+          }
+          
+          // Check columns
+          for (let i = 0; i < rows - 2; i++) {
+            for (let j = 0; j < cols; j++) {
+              const currentCandy = candiesList[i * cols + j];
+              const nextCandy1 = candiesList[(i + 1) * cols + j];
+              const nextCandy2 = candiesList[(i + 2) * cols + j];
+              
+              if (
+                currentCandy.className === nextCandy1.className &&
+                currentCandy.className === nextCandy2.className
+              ) {
+                clearList.push(currentCandy, nextCandy1, nextCandy2);
+              }
+            }
+          }
+          
+          // Remove candies in clear list
+          clearList.forEach(candy => {
+            candy.className = 'candy';
+          });
+        }
+  
+        startTimer(); // Start the timer
+      });
+</script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fruit Cutting Game</title>
+<style>
+    canvas {
+        border: 1px solid #000;
+        display: block;
+        margin: 0 auto;
+        background-color: white;
+    }
+    .score {
+        font-size: 24px;
+    }
+    button{
+        background-color: red;
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 8px;
+        margin-left: 650px;
+    }
+      
+</style>
+</head>
+<body style="background-color:rgb(255, 255, 118)">
+<canvas id="gameCanvas" width="600" height="400"></canvas>
+<div id="score" class="score">Score: 0</div>
+<button id="startButton">Start Game</button>
+<script>
+    // Initialize canvas and context
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Fruit objects
+    let fruits = [];
+
+    // Score
+    let score = 0;
+    const scoreDisplay = document.getElementById('score');
+
+    // Fruit class
+    class Fruit {
+        constructor(x, y, velocityX, velocityY, radius, color) {
+            this.x = x;
+            this.y = y;
+            this.velocityX = velocityX;
+            this.velocityY = velocityY;
+            this.radius = radius;
+            this.color = color;
+        }
+
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        update() {
+            this.x += this.velocityX;
+            this.y += this.velocityY;
+            this.draw();
+        }
+    }
+
+    // Function to generate random color
+    function getRandomColor() {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
+    // Function to generate random integer
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+
+    // Function to create fruits
+    function createFruit() {
+        const radius = getRandomInt(10, 30);
+        const x = getRandomInt(radius, canvas.width - radius);
+        const y = -radius;
+        const velocityX = getRandomInt(-3, 3);
+        const velocityY = getRandomInt(3, 6);
+        const color = getRandomColor();
+        const fruit = new Fruit(x, y, velocityX, velocityY, radius, color);
+        fruits.push(fruit);
+    }
+
+    // Function to handle mouse events
+    function handleMouse(e) {
+        const mouseX = e.clientX - canvas.offsetLeft;
+        const mouseY = e.clientY - canvas.offsetTop;
+
+        for (let i = 0; i < fruits.length; i++) {
+            const dx = mouseX - fruits[i].x;
+            const dy = mouseY - fruits[i].y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < fruits[i].radius) {
+                fruits.splice(i, 1);
+                score += 10; // Increment score by 10 for each fruit cut
+                scoreDisplay.textContent = 'Score: ' + score;
+            }
+        }
+    }
+
+    // Update and render the game
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        fruits.forEach((fruit, index) => {
+            fruit.update();
+
+            // Remove fruit if it goes out of the screen
+            if (fruit.y - fruit.radius > canvas.height) {
+                fruits.splice(index, 1);
+            }
+        });
+
+        requestAnimationFrame(animate);
+    }
+
+    // Generate fruits every 1 second
+    let gameInterval;
+    function startGame() {
+        gameInterval = setInterval(createFruit, 1000);
+        canvas.addEventListener('mousedown', handleMouse);
+        animate();
+    }
+
+    // Start button event listener
+    const startButton = document.getElementById('startButton');
+    startButton.addEventListener('click', startGame);
+</script>
+</body>
+</html>

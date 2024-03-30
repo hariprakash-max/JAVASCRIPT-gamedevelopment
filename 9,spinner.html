@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>spin wheel</title>
+  <link rel="stylesheet" type="text/css" href="spinner.css">
+</head>
+<body>
+  <div class="container">
+    <div class="spinBtn">spin</div>
+    <div class="wheel">
+      <div class="number" style="--i:1;--clr:#b4b707;">
+        <span>PING-PONG</span>
+      </div>
+      <div class="number" style="--i:2;--clr:#20b2aa;">
+        <span>PACMAN</span>
+      </div>
+      <div class="number" style="--i:3;--clr:#ec2794;">
+        <span>CANDY-CRUSH</span>
+      </div>
+      <div class="number" style="--i:4;--clr:#daa520;">
+        <span>SUDOKU</span>
+      </div>
+      <div class="number" style="--i:5;--clr:#ff340f;">
+        <span>TETRIS</span>
+      </div>
+      <div class="number" style="--i:6;--clr:#ff7f50;">
+        <span>JUMP-RUN</span>
+      </div>
+      <div class="number" style="--i:7;--clr:#3cb371;">
+        <span>FRUIT-CUT</span>
+      </div>
+      <div class="number" style="--i:8;--clr:#4169e1;">
+        <span>MAZE-GAME</span>
+      </div>
+    </div>
+  </div>
+  <script>
+    let wheel = document.querySelector('.wheel');
+    let spinBtn = document.querySelector('.spinBtn');
+
+    spinBtn.onclick = function(){
+      let value = Math.ceil(Math.random() * 3600);                            // generating a random degree
+      wheel.style.transform = "rotate(" + value +"deg)";
+
+      setTimeout(function() {
+        let selectedGameIndex = Math.floor(value / 45) % 8;                   
+        let games = document.querySelectorAll('.number span');
+        let selectedGame = games[selectedGameIndex].textContent;
+        let gameURL = '';                                                     
+
+        // Map game name to URL if needed
+        switch(selectedGame) {
+          case 'PING-PONG':
+            gameURL = 'file:///C:/Users/mnhar/OneDrive/Desktop/jsproject/8%2Cpingpong-project.html';
+            break;
+          case 'PACMAN':
+            gameURL = 'file:///C:/Users/mnhar/OneDrive/Desktop/jsproject/7%2Cpacman.html';
+            break;
+          case 'CANDY-CRUSH':
+            gameURL = 'file:///C:/Users/mnhar/OneDrive/Desktop/jsproject/6%2Ccandycrush.html';
+            break;
+          case 'SUDUKO':  
+            gameURL = 'file:///C:/Users/mnhar/OneDrive/Desktop/jsproject/10%2Csudoku%20chatgpt_%20project.html';
+            break;
+          case 'TETRIS':
+            gameURL = 'file:///C:/Users/mnhar/OneDrive/Desktop/jsproject/15%2Ctetris-game.html';
+            break;
+          case 'JUMP-RUN':
+            gameURL = 'file:///C:/Users/mnhar/OneDrive/Desktop/jsproject/3.jump_run_project.html';
+            break;
+          case 'FRUIT-CUT': 
+            gameURL ='file:///C:/Users/mnhar/OneDrive/Desktop/jsproject/2.fruit_cutting_project.html';
+            break;
+          case 'MAZE-RUN': 
+            gameURL = 'file:///C:/Users/mnhar/OneDrive/Desktop/jsproject/16%2CMaze-game.html';
+                  
+        }
+
+        if (gameURL !== '') {
+          let confirmation = confirm("Selected Game: " + selectedGame + "\n\nDo you want to play this game?");
+          if (confirmation) {
+            window.location.href = gameURL; // Redirect to the game URL
+          }
+        } else {
+          alert("Selected Game: " + selectedGame);
+        }
+      }, 5000); // Adjust the time to match the spinner animation duration
+    }
+  </script>
+</body>
+</html>

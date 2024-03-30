@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pac-Man</title>
+  <style>
+    body{
+      background: rgb(238,174,202);
+      background: radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(148,187,233,1) 100%);
+    }
+    #game-container {
+      width: 500px;
+      height: 500px;
+      border: 1px solid black;
+      position: relative;
+      margin-left: 500px;
+      background: url();
+    }
+    .pacman, .pellet, .enemy, .block {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 0;
+    }
+    .pacman {
+      background-color: yellow;
+    }
+    .pellet {
+      background-color: white;
+    }
+    .enemy {
+      background-color: red;
+    }
+    .block {
+      background-color: black;
+    }
+    #timer {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container"></div>
+  <div id="timer">Time Left: <span id="time">60</span> seconds</div>
+  
+  <script>
+    const container = document.getElementById('game-container');
+    const timerElement = document.getElementById('time');
+    const gridSize = 20;
+    const rows = 25;
+    const cols = 25;
+    const speed = 150; // milliseconds
+    let timeLeft = 120; // seconds
+
+    const pacman = document.createElement('div');
+    pacman.className = 'pacman';
+    container.appendChild(pacman);
+
+    let pacmanX = Math.floor(cols / 2) * gridSize;
+    let pacmanY = Math.floor(rows / 2) * gridSize;
+
+    let score = 0;
+
+    function movePacman(direction) {
+      switch(direction) {
+        case 'ArrowUp':
+          if (!checkCollision(pacmanX, pacmanY - gridSize))
+            pacmanY -= gridSize;
+          break;
+        case 'ArrowDown':
+          if (!checkCollision(pacmanX, pacmanY + gridSize))
+            pacmanY += gridSize;
+          break;
+        case 'ArrowLeft':
+          if (!checkCollision(pacmanX - gridSize, pacmanY))
+            pacmanX -= gridSize;
+          break;
+        case 'ArrowRight':
+          if (!checkCollision(pacmanX + gridSize, pacmanY))
+            pacmanX += gridSize;
+          break;
+      }
+
+      // Prevent Pac-Man from going out of bounds
+      pacmanX = Math.max(0, Math.min(pacmanX, (cols - 1) * gridSize));
+      pacmanY = Math.max(0, Math.min(pacmanY, (rows - 1) * gridSize));
+
+      pacman.style.left = pacmanX + 'px';
+      pacman.style.top = pacmanY + 'px';
+
+      checkPelletCollision();
+      checkEnemyCollision();
+    }
+
+    function checkPelletCollision() {
+      const pellets = document.querySelectorAll('.pellet');
+      pellets.forEach(pellet => {
+        if (
+          pacmanX === pellet.offsetLeft &&
+          pacmanY === pellet.offsetTop
+        ) {
+          pellet.parentNode.removeChild(pellet);
+          score++;
+          document.getElementById('score').innerText = score;
+        }
+      });
+    }
+
+    function checkEnemyCollision() {
+      const enemies = document.querySelectorAll('.enemy');
+      enemies.forEach(enemy => {
+        if (
+          pacmanX === enemy.offsetLeft &&
+          pacmanY === enemy.offsetTop
+        ) {
+          gameOver();
+        }
+      });
+    }
+
+    function gameOver() {
+      clearInterval(timerInterval);
+      alert("Game Over! You got bitten by an enemy.");
+      location.reload(); // Reload the page to restart the game
+    }
+
+    function checkCollision(x, y) {
+      const blocks = document.querySelectorAll('.block');
+      for (let i = 0; i < blocks.length; i++) {
+        if (x === blocks[i].offsetLeft && y === blocks[i].offsetTop) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function createPellets() {
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          const pellet = document.createElement('div');
+          pellet.className = 'pellet';
+          pellet.style.left = j * gridSize + 'px';
+          pellet.style.top = i * gridSize + 'px';
+          container.appendChild(pellet);
+        }
+      }
+    }
+
+    function createEnemies() {
+      for (let i = 0; i < 3; i++) { // Creating 3 enemies for example
+        const enemy = document.createElement('div');
+        enemy.className = 'enemy';
+        enemy.style.left = Math.floor(Math.random() * cols) * gridSize + 'px';
+        enemy.style.top = Math.floor(Math.random() * rows) * gridSize + 'px';
+        container.appendChild(enemy);
+      }
+    }
+
+    function createBlocks() {
+      // Example: Creating 10 blocks randomly
+      for (let i = 0; i < 10; i++) {
+        const block = document.createElement('div');
+        block.className = 'block';
+        block.style.left = Math.floor(Math.random() * cols) * gridSize + 'px';
+        block.style.top = Math.floor(Math.random() * rows) * gridSize + 'px';
+        container.appendChild(block);
+      }
+    }
+
+    createPellets();
+    createEnemies();
+    createBlocks();
+
+    document.addEventListener('keydown', function(event) {
+      movePacman(event.key);
+    });
+
+    const timerInterval = setInterval(() => {
+      timeLeft--;
+      timerElement.textContent = timeLeft + " seconds";
+      if (timeLeft === 0) {
+        clearInterval(timerInterval);
+        alert("Time's up! Game Over!");
+        location.reload(); // Reload the page to restart the game
+      }
+      moveEnemies(); // Move enemies in each interval
+    }, 1000);
+
+    function moveEnemies() {
+      const enemies = document.querySelectorAll('.enemy');
+      enemies.forEach(enemy => {
+        const direction = Math.floor(Math.random() * 4);
+        let newX = parseInt(enemy.style.left);
+        let newY = parseInt(enemy.style.top);
+
+        switch (direction) {
+          case 0:
+            newY = Math.max(0, newY - gridSize);
+            break;
+          case 1:
+            newY = Math.min((rows - 1) * gridSize, newY + gridSize);
+            break;
+          case 2:
+            newX = Math.max(0, newX - gridSize);
+            break;
+          case 3:
+            newX = Math.min((cols - 1) * gridSize, newX + gridSize);
+            break;
+        }
+
+        // Check if the new position is not blocked by a block
+        if (!checkCollision(newX, newY)) {
+          enemy.style.left = newX + 'px';
+          enemy.style.top = newY + 'px';
+        }
+      });
+    }
+
+    function checkAllEnemiesEaten() {
+      const enemies = document.querySelectorAll('.enemy');
+      if (enemies.length === 0) {
+        clearInterval(timerInterval);
+        alert("Congratulations! You've eaten all enemies!");
+        location.reload(); // Reload the page to restart the game
+      }
+    }
+  </script>
+</body>
+</html>

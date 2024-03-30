@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sudoku Game</title>
+<style>
+    body {
+        background-color: #f0f0f0;
+        font-family: Arial, sans-serif;
+    }
+
+    table {
+        border-collapse: collapse;
+        background-color: #fff;
+    }
+
+    td {
+        width: 40px;
+        height: 40px;
+        text-align: center;
+        border: 2px solid #000;
+        background-color: #ffffff;
+    }
+
+    .sudoku-board {
+        margin: 40px auto;
+        padding: 30px;
+        background-color: #fff;
+        box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.5);
+        padding-left: 525px;
+    }
+
+    button {
+        width: 400px;
+        height: 40px;
+        background-color: #000;
+        color: #fff;
+        outline: none;
+        text-align: center;
+        font-size: 16px;
+        margin: 20px auto;
+        display: block;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+    }
+
+    button:hover {
+        background-color: #333;
+    }
+
+    .sudoku-board td {
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+<div class="sudoku-board"></div>
+<button onclick="solveSudoku()">SOLVE</button>
+<script>
+    // Function to generate a Sudoku puzzle
+    function generateSudoku() {
+        const sudoku = [
+            [5, 3, 0, 0, 7, 0, 0, 0, 0],
+            [6, 0, 0, 1, 9, 5, 0, 0, 0],
+            [0, 9, 8, 0, 0, 0, 0, 6, 0],
+            [8, 0, 0, 0, 6, 0, 0, 0, 3],
+            [4, 0, 0, 8, 0, 3, 0, 0, 1],
+            [7, 0, 0, 0, 2, 0, 0, 0, 6],
+            [0, 6, 0, 0, 0, 0, 2, 8, 0],
+            [0, 0, 0, 4, 1, 9, 0, 0, 5],
+            [0, 0, 0, 0, 8, 0, 0, 7, 9]
+        ];
+
+        return sudoku;
+    }
+
+    // Function to render the Sudoku puzzle
+    function renderSudoku(sudoku) {
+        const sudokuBoard = document.querySelector('.sudoku-board');
+        sudokuBoard.innerHTML = '';
+
+        sudoku.forEach((row, i) => {
+            const rowElement = document.createElement('tr');
+            row.forEach((cell, j) => {
+                const cellElement = document.createElement('td');
+                cellElement.textContent = cell === 0 ? '' : cell;
+                cellElement.onclick = () => {
+                    if (cell === 0) {
+                        const value = prompt('Enter a number (1-9):');
+                        if (value && /^\d$/.test(value) && isValidMove(sudoku, i, j, parseInt(value))) {
+                            sudoku[i][j] = parseInt(value);
+                            renderSudoku(sudoku);
+                        } else {
+                            alert('Invalid input or move!');
+                        }
+                    }
+                };
+                rowElement.appendChild(cellElement);
+            });
+            sudokuBoard.appendChild(rowElement);
+        });
+    }
+
+    // Function to check if the move is valid
+    function isValidMove(sudoku, row, col, num) {
+        // Check row
+        for (let i = 0; i < 9; i++) {
+            if (sudoku[row][i] === num) {
+                return false;
+            }
+        }
+
+        // Check column
+        for (let i = 0; i < 9; i++) {
+            if (sudoku[i][col] === num) {
+                return false;
+            }
+        }
+
+        // Check 3x3 grid
+        const startRow = Math.floor(row / 3) * 3;
+        const startCol = Math.floor(col / 3) * 3;
+        for (let i = startRow; i < startRow + 3; i++) {
+            for (let j = startCol; j < startCol + 3; j++) {
+                if (sudoku[i][j] === num) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    // Function to solve the Sudoku puzzle
+    function solveSudoku() {
+        const sudoku = generateSudoku();
+        if (solveHelper(sudoku)) {
+            renderSudoku(sudoku);
+        } else {
+            alert('No solution exists!');
+        }
+    }
+
+    // Helper function for solving Sudoku using backtracking
+    function solveHelper(sudoku) {
+        const emptyCell = findEmptyCell(sudoku);
+        if (!emptyCell) {
+            return true;
+        }
+
+        const [row, col] = emptyCell;
+        for (let num = 1; num <= 9; num++) {
+            if (isValidMove(sudoku, row, col, num)) {
+                sudoku[row][col] = num;
+                if (solveHelper(sudoku)) {
+                    return true;
+                }
+                sudoku[row][col] = 0;
+            }
+        }
+        return false;
+    }
+
+    // Function to find an empty cell
+    function findEmptyCell(sudoku) {
+        for (let i = 0; i < 9; i++) {
+            for (let j = 0; j < 9; j++) {
+                if (sudoku[i][j] === 0) {
+                    return [i, j];
+                }
+            }
+        }
+        return null;
+    }
+
+    // Initial rendering of the Sudoku puzzle
+    renderSudoku(generateSudoku());
+</script>
+</body>
+</html>

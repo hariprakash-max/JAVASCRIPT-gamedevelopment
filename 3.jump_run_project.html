@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jump and Run Game</title>
+<style>
+    canvas {
+        border: 1px solid #000;
+        display: block;
+        margin: 0 auto;
+        background: url(bg-img.png);
+    }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas" width="800" height="400"></canvas>
+<script>
+    // Initialize canvas and context
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Player object
+    const player = {
+        x: 50,
+        y: canvas.height - 50,
+        width: 50,
+        height: 50,
+        velocityY: 20,
+        jumping: false
+    };
+
+    // Array to hold obstacles
+    const obstacles = [];
+
+    // Score
+    let score = 0;
+
+    // Function to draw player
+    function drawPlayer() {
+        ctx.fillStyle = '#FF0000';
+        ctx.fillRect(player.x, player.y, player.width, player.height);
+    }
+
+    // Function to draw obstacle
+    function drawObstacle(obstacle) {
+        ctx.fillStyle = '#0000FF';
+        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+    }
+
+    // Function to update player position
+    function updatePlayer() {
+        player.y -= player.velocityY;
+        player.velocityY -= 1;
+
+        if (player.y > canvas.height - player.height) {
+            player.y = canvas.height - player.height;
+            player.jumping = false;
+        }
+    }
+
+    // Function to update obstacles position and check collisions
+    function updateObstacles() {
+        for (let i = 0; i < obstacles.length; i++) {
+            obstacles[i].x += obstacles[i].velocityX;
+
+            if (obstacles[i].x + obstacles[i].width < 0) {
+                obstacles.splice(i, 1); // Remove obstacle when it goes off screen
+                score++; // Increment score when obstacle is avoided
+            }
+
+            // Collision detection
+            if (
+                player.x < obstacles[i].x + obstacles[i].width &&
+                player.x + player.width > obstacles[i].x &&
+                player.y < obstacles[i].y + obstacles[i].height &&
+                player.y + player.height > obstacles[i].y
+            ) {
+                endGame();
+            }
+        }
+    }
+
+    // Function to handle keyboard input
+    function handleKeyDown(event) {
+        if (event.keyCode === 32 && !player.jumping) {
+            player.velocityY = 20;
+            player.jumping = true;
+        }
+    }
+
+    // Function to generate random obstacles
+    function generateObstacle() {
+        const obstacle = {
+            x: canvas.width,
+            y: canvas.height - 30, // Decreased height of obstacles
+            width: 20, // Decreased width of obstacles
+            height: 30, // Decreased height of obstacles
+            velocityX: -5 // Increased speed of obstacles
+        };
+        obstacles.push(obstacle);
+    }
+
+    // Function to end the game
+    function endGame() {
+        alert('Game Over! Your score is: ' + score);
+        document.location.reload(); // Reload the page to restart the game
+    }
+
+    // Update and render the game
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        drawPlayer();
+        for (const obstacle of obstacles) {
+            drawObstacle(obstacle);
+        }
+        updatePlayer();
+        updateObstacles();
+
+        // Display score
+        ctx.fillStyle = '#000';
+        ctx.font = '24px Arial';
+        ctx.fillText('Score: ' + score, 10, 30);
+
+        requestAnimationFrame(animate);
+    }
+
+    // Listen for keyboard input
+    window.addEventListener('keydown', handleKeyDown);
+
+    // Generate obstacles at intervals
+    setInterval(generateObstacle, 2000);
+
+    // Start the game loop
+    animate();
+</script>
+</body>
+</html>
